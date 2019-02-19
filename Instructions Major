@@ -1,0 +1,5 @@
+To Run the Server, write this Command :
+
+sudo python server_final.py --shape-predictor shape_predictor_68_face_landmarks.dat
+
+
