@@ -8,6 +8,7 @@ import imutils
 import time
 import dlib
 import cv2
+import json
 
 import os
 import urllib
@@ -29,7 +30,8 @@ path_to_known_faces='/home/sukrit/Desktop'
 known_faces=[]
 known_face_encodings=[]
 
-print "KnownFaces[]: ", known_faces
+
+#print "KnownFaces[]: ", known_faces
 
 @app.route('/<bitmapString>')
 
@@ -64,13 +66,13 @@ def detect_EAR():
    # predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat") 
     (lStart, lEnd) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]
     (rStart, rEnd) = face_utils.FACIAL_LANDMARKS_IDXS["right_eye"]
-    print (lStart)	
-    print (lEnd)
-    print (rStart)	
-    print (rEnd)
-    print(face_utils.FACIAL_LANDMARKS_IDXS["mouth"])
+    #print (lStart)	
+    #print (lEnd)
+    #print (rStart)	
+    #print (rEnd)
+    #print(face_utils.FACIAL_LANDMARKS_IDXS["mouth"])
 
-    print("[INFO] starting video stream thread...")
+    #print("[INFO] starting video stream thread...")
     vs = FileVideoStream(args["video"]).start()
     fileStream = True
     #vs = VideoStream(src=0).start()
@@ -112,14 +114,14 @@ def detect_EAR():
         lMouth64_66 = dist.euclidean((landmarksX[63],landmarksY[63]),(landmarksX[65],landmarksY[65]) )
         lMouth61_65 = dist.euclidean((landmarksX[60],landmarksY[60]),(landmarksX[64],landmarksY[64]) )
 
-        mEar = (lMouth62_68 + lMouth64_66) / (2.0 * lMouth61_65)
- 	 
+        mEar = (lMouth62_68 + lMouth64_66) / (2.0 * lMouth61_65) 
+
 	print("MOR = ",mEar)
 
 	NLR = dist.euclidean((landmarksX[27],landmarksY[27]),(landmarksX[30],landmarksY[30]) )
 
 	print("NLR = ",NLR)
-	
+
 	for rect in rects:
 		
 		shape = predictor(gray, rect)
@@ -137,7 +139,16 @@ def detect_EAR():
 		#print (mouthEar)
 		
 		ear = (leftEAR + rightEAR) / 2.0
-		return ear
+		return_list=[]
+		return_list.append(ear)
+		return_list.append(mEar)
+		return_list.append(NLR)
+		data = {}
+		data['ear'] = ear
+		data['mor'] = mEar
+		data['nlr'] = NLR
+		json_data = json.dumps(data)
+		return json_data
  
 	if key == ord("q"):
 		break
@@ -185,10 +196,18 @@ def index():
 	file1.close()
 	
         # The Script for Ear Calculation Goes Here......
-        rvalue = str(detect_EAR())
-        print ("EAR = ",rvalue)
+        #rvalue = str(detect_EAR())
+	
+       # print("EAR = ",rvalue)
+	
+	#return_list.append(rvalue)  #EAR appended
+	
+	ret = detect_EAR()
+	print ret
         
-        return rvalue
+#	return  '{} {} {}'.format(11,22,33)
+        return ret
+	
 
 @app.route('/bacon',methods=['GET','POST'])
 def bacon():
